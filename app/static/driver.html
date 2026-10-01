@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KisanDirect | Driver Route Manifest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #15803d;
+      --accent: #0284c7;
+      --warning: #d97706;
+      --dark: #0f172a;
+      --slate: #475569;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--dark); display: flex; justify-content: center; }
+
+    .driver-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.08);
+    }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .status-summary {
+      background: #eff6ff;
+      border-bottom: 2px solid #bfdbfe;
+      padding: 12px 18px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stop-list { padding: 14px; flex: 1; overflow-y: auto; }
+    
+    .stop-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .stop-card.done {
+      background: #f0fdf4;
+      border-color: #86efac;
+      opacity: 0.85;
+    }
+    .stop-card.done .btn-done {
+      background: #16a34a;
+    }
+
+    .stop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .badge-step {
+      background: #e2e8f0;
+      color: var(--dark);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .badge-pickup { background: #dcfce7; color: #166534; }
+    .badge-drop { background: #fee2e2; color: #991b1b; }
+    .badge-input { background: #dbeafe; color: #1e40af; }
+
+    .btn-nav {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-done {
+      background: #64748b;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="driver-shell">
+  <header>
+    <div>
+      <h2 style="font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+        <i class="fa fa-truck"></i> Driver Route Manifest
+      </h2>
+      <span style="font-size:0.75rem; color:#94a3b8;">Vehicle AP-03-TC-1234 (1.5 Ton)</span>
+    </div>
+    <a href="/buyer" style="color:#38bdf8; text-decoration:none; font-size:0.8rem;"><i class="fa fa-desktop"></i> Buyer Hub</a>
+  </header>
+
+  <div class="status-summary">
+    <div>
+      <strong>Chittoor - Tirupati Circuit</strong><br>
+      <span id="routeDistance">Loading itinerary...</span>
+    </div>
+    <span style="background:#15803d; color:white; font-size:0.75rem; padding:4px 8px; border-radius:999px; font-weight:bold;">
+      OR-Tools Active
+    </span>
+  </div>
+
+  <div class="stop-list" id="stopList">
+    <p style="color:var(--slate); font-size:0.85rem;">Calculating optimal sequence...</p>
+  </div>
+</div>
+
+<script>
+  const API = "/api/v1";
+  let manifestData = null;
+
+  async function loadDriverManifest() {
+    const payload = {
+      vehicle_capacity_kg: 1500,
+      nodes: [
+        { id: 0, name: "Village FPO Depot (Chittoor)", node_type: "FPO_HUB", demand_kg: 0, lat: 13.2172, lng: 79.1003 },
+        { id: 1, name: "Farmer Cluster 1 (Madanapalle - Tomatoes)", node_type: "FPO_HUB", demand_kg: 500, lat: 13.5560, lng: 78.5010 },
+        { id: 2, name: "Farmer Cluster 2 (Pileru - Greens)", node_type: "FPO_HUB", demand_kg: 400, lat: 13.6558, lng: 78.9882 },
+        { id: 3, name: "City Bulk Wholesaler (Tirupati)", node_type: "BUYER_DROP", demand_kg: -900, lat: 13.6288, lng: 79.4192 },
+        { id: 4, name: "Agri-Input Depot (Renigunta - Return Seeds)", node_type: "INPUT_DEPOT", demand_kg: 350, lat: 13.6496, lng: 79.5161 }
+      ]
+    };
+
+    const res = await fetch(`${API}/logistics/optimize-circular-route`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    manifestData = await res.json();
+
+    document.getElementById("routeDistance").innerText = 
+      `Total Path: ${manifestData.total_distance_km} km • Max Load: ${manifestData.vehicle_capacity_kg} kg`;
+
+    const container = document.getElementById("stopList");
+    container.innerHTML = manifestData.itinerary.map((stop, idx) => {
+      let badgeClass = "badge-step";
+      if (stop.action === "PICKUP") badgeClass += " badge-pickup";
+      if (stop.action === "DELIVERY") badgeClass += " badge-drop";
+      if (stop.node_type === "INPUT_DEPOT") badgeClass += " badge-input";
+
+      const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+
+      return `
+        <div class="stop-card" id="card-${idx}">
+          <div class="stop-header">
+            <span class="${badgeClass}">Stop #${stop.step} • ${stop.action}</span>
+            <span style="font-size:0.75rem; color:var(--slate); font-weight:bold;">Load: ${stop.vehicle_load_kg} kg</span>
+          </div>
+          <strong style="font-size:0.95rem;">${stop.name}</strong>
+          <p style="font-size:0.78rem; color:var(--slate); margin:4px 0 10px;">
+            Payload Delta: ${stop.load_change_kg > 0 ? '+' : ''}${stop.load_change_kg} kg • (${stop.lat.toFixed(3)}, ${stop.lng.toFixed(3)})
+          </p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="${navUrl}" target="_blank" class="btn-nav">
+              <i class="fa fa-location-arrow"></i> Navigate GPS
+            </a>
+            <button class="btn-done" id="btn-${idx}" onclick="toggleStopComplete(${idx})">
+              Mark Complete
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function toggleStopComplete(index) {
+    const card = document.getElementById(`card-${index}`);
+    const btn = document.getElementById(`btn-${index}`);
+    const isDone = card.classList.toggle("done");
+    btn.innerText = isDone ? "✓ Done" : "Mark Complete";
+  }
+
+  loadDriverManifest();
+</script>
+</body>
+</html>

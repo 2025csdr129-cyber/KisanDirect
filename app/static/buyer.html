@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KisanDirect | Wholesale Buyer & Logistics Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --success: #15803d;
+      --dark: #0f172a;
+      --slate: #475569;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--dark); padding: 18px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface); padding: 16px 20px; border-radius: 12px;
+      border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px; box-shadow: var(--shadow); margin-bottom: 18px;
+    }
+    .badge {
+      display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+    }
+    .badge-cert { background: #dcfce7; color: #166534; }
+    .badge-escrow { background: #e0f2fe; color: #0369a1; }
+
+    .btn {
+      padding: 10px 14px; border: none; border-radius: 8px; font-weight: 700;
+      cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
+
+    .lot-item {
+      border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+      margin-bottom: 12px; background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div>
+      <h2 style="color:var(--primary);"><i class="fa fa-store"></i> Wholesale Buyer & Escrow Terminal</h2>
+      <p style="font-size:0.82rem; color:var(--slate);">Tirupati Wholesale Terminal • Direct Farmgate Aggregation</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="loadLots()"><i class="fa fa-sync-alt"></i> Refresh Farmgate Lots</button>
+      <button class="btn" style="background:#475569; color:white;" onclick="window.location.href='/'"><i class="fa fa-home"></i> Farmer Portal</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- COLUMN 1: VERIFIED PRODUCE LOTS -->
+    <div>
+      <div class="card">
+        <h3 style="font-size:1.05rem; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span>📋 Verified Farmgate Lots</span>
+          <span style="font-size:0.75rem; color:var(--slate);" id="lotCountTag">Loading...</span>
+        </h3>
+        <div id="lotsContainer">Loading verified produce...</div>
+      </div>
+    </div>
+
+    <!-- COLUMN 2: ACTIVE 40/60 ESCROW VAULT -->
+    <div>
+      <div class="card">
+        <h3 style="font-size:1.05rem; margin-bottom:12px;">
+          <i class="fa fa-lock" style="color:var(--success);"></i> Active Split Escrow Contracts
+        </h3>
+        <div id="escrowOrdersContainer">Loading escrow contracts...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = "/api/v1";
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadLots();
+    loadEscrowContracts();
+  });
+
+  async function loadLots() {
+    const box = document.getElementById('lotsContainer');
+    box.innerHTML = "<p style='color:var(--slate); font-size:0.85rem;'>Fetching latest listings...</p>";
+
+    try {
+      const res = await fetch(`${API}/produce/catalog`);
+      const lots = await res.json();
+      document.getElementById('lotCountTag').innerText = `${lots.length} Available`;
+
+      if (!lots || lots.length === 0) {
+        box.innerHTML = "<p style='color:var(--slate); font-size:0.85rem;'>No produce lots published yet.</p>";
+        return;
+      }
+
+      box.innerHTML = lots.map(l => {
+        const benchmark = l.mandi_benchmark_price || 33.00;
+        const totalEstimate = Math.round(l.quantity_kg * benchmark);
+        const advEstimate = Math.round(totalEstimate * 0.40);
+
+        return `
+          <div class="lot-item">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+              <strong>#${l.id}: ${l.crop} (${l.grade})</strong>
+              <span style="font-size:1.05rem; font-weight:800; color:var(--success);">${l.quantity_kg} kg</span>
+            </div>
+            <div style="font-size:0.78rem; color:var(--slate); margin-bottom:6px;">
+              Farmer: <strong>${l.farmer_name}</strong> • Phone: ${l.phone_number}<br>
+              Hub: ${l.fpo_hub_id || 'Madanapalle Hub'} • Cert: <span class="badge badge-cert">${l.quality_certificate_id || 'AP-VERIFIED'}</span>
+            </div>
+            <div style="background:#f1f5f9; padding:8px; border-radius:6px; font-size:0.75rem; margin-bottom:8px;">
+              Benchmark Rate: <strong>₹${benchmark.toFixed(2)}/kg</strong> | Est: ₹${totalEstimate.toLocaleString()} (40% Advance: ₹${advEstimate.toLocaleString()})
+            </div>
+            <button class="btn btn-success btn-sm" onclick="lockEscrow(${l.id}, ${l.quantity_kg}, ${benchmark})">
+              <i class="fa fa-lock"></i> Lock Split Escrow (40% Farmgate)
+            </button>
+          </div>
+        `;
+      }).join("");
+
+    } catch(err) {
+      box.innerHTML = `<p style="color:#ef4444; font-size:0.85rem;">Error loading lots: ${err.message}</p>`;
+    }
+  }
+
+  async function lockEscrow(listingId, qty, unitPrice) {
+    if (!qty || isNaN(qty)) qty = 500;
+    if (!unitPrice || isNaN(unitPrice)) unitPrice = 33.00;
+
+    const payload = {
+      listing_id: parseInt(listingId),
+      buyer_name: "Tirupati Wholesale Terminal",
+      quantity_kg: parseFloat(qty),
+      unit_price: parseFloat(unitPrice)
+    };
+
+    try {
+      const res = await fetch(`${API}/order/escrow/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Failed to lock escrow: " + (data.detail || JSON.stringify(data)));
+        return;
+      }
+
+      alert(`Success! Escrow Contract #${data.order_id} Locked for ₹${data.total_amount.toLocaleString()}. 40% Advance (₹${data.advance_amount.toLocaleString()}) ready for truck pickup.`);
+      loadEscrowContracts();
+
+    } catch(err) {
+      alert("Network error: " + err.message);
+    }
+  }
+
+  async function loadEscrowContracts() {
+    const box = document.getElementById('escrowOrdersContainer');
+    try {
+      const res = await fetch(`${API}/order/escrow/all`);
+      const orders = await res.json();
+
+      if (!orders || orders.length === 0) {
+        box.innerHTML = "<p style='color:var(--slate); font-size:0.85rem;'>No escrow contracts locked yet.</p>";
+        return;
+      }
+
+      box.innerHTML = orders.map(o => `
+        <div class="lot-item" style="border-left:4px solid ${o.escrow_status === 'RELEASED' ? '#15803d' : '#0284c7'};">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong>Contract #${o.id} (Lot #${o.listing_id})</strong>
+            <span class="badge ${o.escrow_status === 'RELEASED' ? 'badge-cert' : 'badge-escrow'}">${o.escrow_status}</span>
+          </div>
+          <div style="font-size:0.8rem; margin:4px 0;">
+            Total Deal Value: <strong>₹${o.total_amount.toLocaleString()}</strong> (${o.quantity_kg} kg)<br>
+            • 40% Farmgate Advance: <strong>₹${o.advance_amount.toLocaleString()}</strong> [${o.advance_status}]<br>
+            • 60% Final Settlement: <strong>₹${o.final_amount.toLocaleString()}</strong>
+          </div>
+          <div style="margin-top:8px; display:flex; gap:6px;">
+            ${o.advance_status !== 'PAID_40' ? `
+              <button class="btn btn-primary btn-sm" onclick="disburseAdvance(${o.id})">
+                <i class="fa fa-money-bill-wave"></i> Disburse 40% Advance (Pickup)
+              </button>
+            ` : `<span style="font-size:0.75rem; color:#15803d; font-weight:bold;">✓ 40% Advance Disbursed</span>`}
+
+            ${o.escrow_status !== 'RELEASED' ? `
+              <button class="btn btn-success btn-sm" onclick="releaseFinal(${o.id})">
+                <i class="fa fa-check-circle"></i> Release 60% Final (Weighed)
+              </button>
+            ` : `<span style="font-size:0.75rem; color:#15803d; font-weight:bold; margin-left:auto;">✓ Fully Settled</span>`}
+          </div>
+        </div>
+      `).join("");
+
+    } catch(e) {
+      box.innerHTML = `<p style="color:#ef4444; font-size:0.85rem;">Error loading escrow orders.</p>`;
+    }
+  }
+
+  async function disburseAdvance(orderId) {
+    const res = await fetch(`${API}/order/escrow/advance-payout/${orderId}`, { method: "POST" });
+    const d = await res.json();
+    alert(`40% Advance (₹${d.advance_disbursed.toLocaleString()}) disbursed via UPI! Farmer notified.`);
+    loadEscrowContracts();
+  }
+
+  async function releaseFinal(orderId) {
+    const res = await fetch(`${API}/order/escrow/release/${orderId}`, { method: "POST" });
+    const d = await res.json();
+    alert(`Final 60% balance (₹${d.final_disbursed.toLocaleString()}) released! Complete transaction closed.`);
+    loadEscrowContracts();
+  }
+</script>
+</body>
+</html>

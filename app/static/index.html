@@ -1,0 +1,1136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KisanDirect | Real Regional Farmer Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#15803d">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #ecfdf5;
+      --accent: #0284c7;
+      --warning: #d97706;
+      --dark: #0f172a;
+      --slate: #475569;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--dark); min-height: 100vh; display: flex; justify-content: center; }
+
+    .app-viewport {
+      width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface);
+      display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.1);
+    }
+
+    .view { display: none; padding: 18px; flex: 1; flex-direction: column; overflow-y: auto; }
+    .view.active { display: flex; }
+
+    header.app-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; background: var(--primary); color: white; position: sticky; top: 0; z-index: 40;
+    }
+    .icon-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; position: relative; }
+    .badge-count {
+      position: absolute; top: -4px; right: -6px; background: #ef4444; color: white;
+      font-size: 0.65rem; font-weight: 800; border-radius: 999px; padding: 1px 5px;
+    }
+    .lang-pill {
+      background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.4);
+      color: white; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+    }
+
+    /* Live WhatsApp/SMS Floating Toast */
+    #liveToastBox {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 440px; background: #0f172a; color: white;
+      padding: 12px 16px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 1000; display: none; border-left: 5px solid #22c55e;
+      animation: slideDown 0.3s ease; cursor: pointer;
+    }
+    @keyframes slideDown { from { top: 30px; opacity: 0; } to { top: 60px; opacity: 1; } }
+
+    /* Notification Drawer Modal */
+    .notif-modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none;
+    }
+    .notif-modal {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
+      max-height: 80vh; background: white; border-radius: 16px 16px 0 0; z-index: 1000; display: none; flex-direction: column;
+    }
+    .msg-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #f8fafc;
+      border-left: 4px solid #25d366;
+    }
+
+    .crop-chip-scroll {
+      display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px; margin-bottom: 8px;
+    }
+    .crop-chip-scroll::-webkit-scrollbar { display: none; }
+    .crop-chip {
+      white-space: nowrap; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--border);
+      background: white; font-size: 0.8rem; font-weight: 700; color: var(--slate); cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .crop-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .market-selector-bar {
+      background: #f1f5f9; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .market-selector-bar select {
+      border: none; background: transparent; font-weight: 700; font-size: 0.88rem;
+      color: var(--dark); outline: none; width: 100%; cursor: pointer;
+    }
+
+    .ground-scanner-card {
+      background: linear-gradient(135deg, #15803d, #14532d); color: white;
+      padding: 16px; border-radius: 12px; margin-bottom: 14px; box-shadow: var(--shadow);
+    }
+    .ground-rates-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px;
+      background: rgba(255,255,255,0.12); padding: 10px; border-radius: 8px; text-align: center;
+    }
+    .ground-rates-row div span { font-size: 0.68rem; opacity: 0.85; display: block; text-transform: uppercase; }
+    .ground-rates-row div strong { font-size: 1.05rem; }
+
+    .nav-tabs { display: flex; background: #e2e8f0; border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+    .nav-tab-btn {
+      flex: 1; padding: 8px 3px; border: none; background: transparent; font-size: 0.72rem;
+      font-weight: 700; color: var(--slate); border-radius: 6px; cursor: pointer; text-align: center;
+    }
+    .nav-tab-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .advisory-decision-card {
+      background: #fefce8; border: 1.5px solid #facc15; border-radius: 12px; padding: 14px; margin-bottom: 14px;
+    }
+    .camera-inspection-box {
+      background: #f0fdf4; border: 1.5px dashed var(--primary); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 14px;
+    }
+    .freight-result-box {
+      background: #f8fafc; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 12px;
+    }
+    .freight-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 5px 0; border-bottom: 1px dashed #e2e8f0; }
+
+    .form-group { margin-bottom: 12px; }
+    label { font-size: 0.82rem; font-weight: 600; color: var(--slate); display: block; margin-bottom: 4px; }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none;
+    }
+    .btn-main {
+      background: var(--primary); color: white; padding: 13px; border: none; border-radius: 8px;
+      font-weight: 700; font-size: 0.95rem; cursor: pointer; width: 100%; box-shadow: var(--shadow);
+    }
+    .btn-secondary {
+      background: #0284c7; color: white; padding: 8px 12px; border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    }
+
+    /* Floating AI Microphone Button */
+    .floating-mic-btn {
+      position: fixed; bottom: 22px; right: 22px; width: 62px; height: 62px;
+      background: linear-gradient(135deg, #15803d, #047857); color: white;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(21, 128, 61, 0.45); cursor: pointer; z-index: 100;
+      border: 3px solid white; transition: transform 0.2s ease;
+      animation: pulseGlow 2.4s infinite;
+    }
+    .floating-mic-btn:active { transform: scale(0.92); }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.5); }
+      70% { box-shadow: 0 0 0 16px rgba(21, 128, 61, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
+    }
+
+    /* Vernacular Voice Sheet */
+    .ai-voice-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55);
+      z-index: 1000; display: none; backdrop-filter: blur(2px);
+    }
+    .ai-voice-sheet {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px; background: white; border-radius: 20px 20px 0 0;
+      z-index: 1001; display: none; flex-direction: column; padding: 20px 18px 26px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
+    }
+    .voice-lang-bar {
+      display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;
+    }
+    .voice-lang-btn {
+      padding: 5px 12px; font-size: 0.75rem; font-weight: 700; border-radius: 999px;
+      border: 1.5px solid var(--border); background: #f8fafc; color: var(--slate); cursor: pointer;
+    }
+    .voice-lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .ai-voice-wave {
+      width: 76px; height: 76px; border-radius: 50%; background: #dcfce7; color: var(--primary);
+      display: flex; align-items: center; justify-content: center; font-size: 2rem;
+      margin: 0 auto 10px; cursor: pointer; border: 3px solid var(--primary);
+    }
+    .ai-voice-wave.listening {
+      animation: micPulse 1.2s infinite alternate; background: #fee2e2; color: #dc2626; border-color: #dc2626;
+    }
+    @keyframes micPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.15); box-shadow: 0 0 20px rgba(220, 38, 38, 0.4); }
+    }
+    .ai-speech-transcript {
+      background: #f8fafc; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; min-height: 48px; font-size: 0.86rem; color: #1e293b; margin-bottom: 10px; text-align: center;
+    }
+    .ai-response-box {
+      background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px;
+      padding: 14px; font-size: 0.88rem; color: #14532d; line-height: 1.45; margin-bottom: 12px;
+      max-height: 180px; overflow-y: auto;
+    }
+    .ai-te-section { font-size: 0.95rem; font-weight: 700; color: #14532d; margin-bottom: 8px; }
+    .ai-en-section { font-size: 0.82rem; color: #334155; border-top: 1px dashed #86efac; padding-top: 6px; }
+
+    .sidebar-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 99; display: none;
+    }
+    .sidebar-drawer {
+      position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background: var(--surface);
+      z-index: 100; transition: left 0.3s ease-in-out; display: flex; flex-direction: column;
+    }
+    .sidebar-drawer.open { left: 0; }
+    .sidebar-header { background: var(--primary); color: white; padding: 22px 18px; }
+    .sidebar-avatar {
+      width: 48px; height: 48px; border-radius: 50%; background: white; color: var(--primary);
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;
+    }
+    .sidebar-menu { list-style: none; padding: 12px 0; flex: 1; }
+    .sidebar-menu li {
+      padding: 13px 18px; display: flex; align-items: center; gap: 12px; color: var(--slate); font-size: 0.92rem; cursor: pointer; border-bottom: 1px solid #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-viewport">
+
+  <!-- LIVE WHATSAPP / SMS NOTIFICATION TOAST -->
+  <div id="liveToastBox" onclick="openNotifModal()">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:0.75rem; color:#86efac; font-weight:bold;" id="toastSource">WHATSAPP RECEIPT</span>
+      <span style="font-size:0.7rem; color:#94a3b8;" id="toastTime">Just now</span>
+    </div>
+    <div style="font-size:0.86rem; font-weight:bold; margin-top:2px;" id="toastTitle">Order Matched</div>
+    <div style="font-size:0.78rem; opacity:0.9; margin-top:2px;" id="toastBody">Notification body...</div>
+  </div>
+
+  <!-- FLOATING VERNACULAR AI MIC BUTTON -->
+  <div class="floating-mic-btn" onclick="openAIVoiceSheet()" title="KisanMitra AI Voice Assistant">
+    <i class="fa fa-microphone" style="font-size:1.65rem;"></i>
+  </div>
+
+  <!-- VIEW 1: AUTH -->
+  <div id="viewLogin" class="view active" style="justify-content:center;">
+    <div style="text-align:center; margin-bottom: 18px;">
+      <div style="font-size:3rem;">🌱</div>
+      <h2 style="color:var(--primary); font-size:1.5rem; font-weight:800;">KisanDirect</h2>
+      <p style="color:var(--slate); font-size:0.82rem;">Direct Farmer-to-Buyer Multi-Marketplace</p>
+    </div>
+
+    <div class="form-group">
+      <label><i class="fa fa-phone"></i> Mobile Number</label>
+      <input type="tel" id="loginPhone" placeholder="10-digit phone number" value="9876543210" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label><i class="fa fa-lock"></i> Security PIN</label>
+      <input type="password" id="loginPin" placeholder="PIN" value="1234" maxlength="6">
+    </div>
+    <button class="btn-main" onclick="handlePinLogin()"><i class="fa fa-arrow-right"></i> Open Farmer Portal</button>
+  </div>
+
+  <!-- VIEW 2: PROFILE SETUP -->
+  <div id="viewProfileSetup" class="view">
+    <h2 style="color:var(--primary);">Farmer Onboarding</h2>
+    <p style="color:var(--slate); font-size:0.82rem; margin-bottom:14px;">Set up your profile and primary harvest area.</p>
+
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="regName" placeholder="e.g. V Suryaprakash" value="V Suryaprakash">
+    </div>
+    <div class="form-group">
+      <label>Village</label>
+      <input type="text" id="regVillage" placeholder="e.g. Chennayyagunta" value="Chennayyagunta">
+    </div>
+    <div class="form-group">
+      <label>District / Nearest Hub</label>
+      <input type="text" id="regDistrict" placeholder="e.g. Chittoor" value="Chittoor">
+    </div>
+    <div class="form-group">
+      <label>Assigned FPO Center</label>
+      <select id="regFpoHub">
+        <option value="Madanapalle-Tomato-Hub">Madanapalle Tomato Hub</option>
+        <option value="Tirupati-FPO-Center">Tirupati Central FPO</option>
+        <option value="Pileru-Farmer-Cluster">Pileru Farmer Cluster</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Create Your Security PIN</label>
+      <input type="password" id="regPin" placeholder="4 or 6 digit PIN" value="1234" maxlength="6">
+    </div>
+    <div class="form-group">
+      <label>UPI ID for Instant Advances</label>
+      <input type="text" id="regUpi" placeholder="e.g. yourname@upi" value="surya@upi">
+    </div>
+
+    <button class="btn-main" onclick="handleRegister()"><i class="fa fa-save"></i> Save Profile & Enter</button>
+  </div>
+
+  <!-- VIEW 3: LIVE PORTAL -->
+  <div id="viewHome" class="view" style="padding:0;">
+    <header class="app-bar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="icon-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+        <span style="font-weight:700; font-size:1.05rem;">KisanDirect</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="lang-pill" id="langToggleBtn" onclick="toggleLanguage()">తెలుగు</button>
+        <!-- Bell Icon with Active Count -->
+        <button class="icon-btn" onclick="openNotifModal()">
+          <i class="fa fa-bell"></i>
+          <span class="badge-count" id="notifBadgeCount">0</span>
+        </button>
+        <button class="icon-btn" onclick="refreshMarketData()"><i class="fa fa-sync-alt"></i></button>
+      </div>
+    </header>
+
+    <div style="padding:14px; flex:1; overflow-y:auto;">
+      
+      <!-- Crop Selector Chips -->
+      <div style="font-size:0.8rem; font-weight:700; color:var(--slate); margin-bottom:6px;">
+        <i class="fa fa-leaf"></i> SELECT PRODUCE COMMODITY:
+      </div>
+      <div class="crop-chip-scroll">
+        <div class="crop-chip active" id="chipTomato" onclick="selectCrop('Tomato')">🍅 Tomato</div>
+        <div class="crop-chip" id="chipGreenChilli" onclick="selectCrop('Green Chilli')">🌶 Green Chilli</div>
+        <div class="crop-chip" id="chipOnion" onclick="selectCrop('Onion')">🧅 Onion</div>
+        <div class="crop-chip" id="chipDryChilli" onclick="selectCrop('Dry Red Chilli')">🔥 Dry Chilli</div>
+        <div class="crop-chip" id="chipMango" onclick="selectCrop('Mango (Totapuri)')">🥭 Mango</div>
+      </div>
+
+      <!-- Market Hub Selector -->
+      <div class="market-selector-bar">
+        <i class="fa fa-store-alt" style="color:var(--primary); font-size:1rem;"></i>
+        <select id="selectedMarket" onchange="onMarketChanged()">
+          <option value="Madanapalle APMC">Madanapalle APMC (Base Corridor)</option>
+          <option value="Tirupati Wholesale Hub">Tirupati Wholesale Hub (28 km)</option>
+          <option value="Kolar APMC (Karnataka)">Kolar Gold APMC (140 km)</option>
+          <option value="Koyambedu Wholesale (Chennai)">Koyambedu Wholesale Chennai (135 km)</option>
+          <option value="Bengaluru (Yeshwanthpur)">Bengaluru Yeshwanthpur Market (185 km)</option>
+          <option value="Guntur Mirchi Yard">Guntur Mirchi Yard (360 km)</option>
+        </select>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab-btn active" id="tabMarketBtn" onclick="switchSubTab('market')">🛒 Harvest</button>
+        <button class="nav-tab-btn" id="tabFreightBtn" onclick="switchSubTab('freight')">🚚 Freight & Profit</button>
+        <button class="nav-tab-btn" id="tabArbitrageBtn" onclick="switchSubTab('arbitrage')">📊 Mandis</button>
+        <button class="nav-tab-btn" id="tabStorageBtn" onclick="switchSubTab('storage')">❄️ Cool</button>
+        <button class="nav-tab-btn" id="tabInputsBtn" onclick="switchSubTab('inputs')">🌱 Inputs</button>
+      </div>
+
+      <!-- TAB 1: HARVEST & SELL -->
+      <div id="tabMarket">
+        <div class="ground-scanner-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="background:rgba(255,255,255,0.22); font-size:0.72rem; padding:3px 8px; border-radius:999px;">
+              <i class="fa fa-check-circle"></i> Live Electronic Auction Desk
+            </span>
+            <small id="currentCommodityLabel" style="font-weight:bold; font-size:0.8rem;">Tomato</small>
+          </div>
+          
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:baseline;">
+            <div>
+              <div style="font-size:0.75rem; opacity:0.85;">Modal Auction Rate</div>
+              <div style="font-size:1.8rem; font-weight:800;" id="spotPriceDisplay">₹33.00 / kg</div>
+            </div>
+            <div style="text-align:right;">
+              <span style="background:rgba(255,255,255,0.25); padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:bold;">
+                +10% Fair Floor Active
+              </span>
+              <div style="font-size:0.68rem; margin-top:4px; opacity:0.85;" id="marketSourceTag">Madanapalle APMC</div>
+            </div>
+          </div>
+
+          <div class="ground-rates-row">
+            <div><span>Min (Grade C)</span><strong id="rateMin">₹28.00</strong></div>
+            <div><span>Modal (Grade B)</span><strong id="rateModal">₹33.00</strong></div>
+            <div><span>Max (Grade A)</span><strong id="rateMax">₹36.00</strong></div>
+          </div>
+        </div>
+
+        <div class="advisory-decision-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <h4 style="color:#854d0e; font-size:0.92rem;" id="advisoryHeadline">⏳ HOLD HARVEST ADVISORY</h4>
+            <span style="background:#ca8a04; color:white; font-size:0.7rem; font-weight:bold; padding:2px 8px; border-radius:4px;">Demand Outlook</span>
+          </div>
+          <p style="font-size:0.78rem; color:#713f12; line-height:1.35;" id="advisoryBody">Loading arrival intelligence...</p>
+          <div style="margin-top:6px; font-size:0.75rem; color:#a16207; font-weight:700;" id="advisoryDelta">
+            Projected corridor premium: +12.0%
+          </div>
+        </div>
+
+        <div class="camera-inspection-box">
+          <i class="fa fa-camera" style="font-size:1.8rem; color:var(--primary);"></i>
+          <h4 style="font-size:0.92rem; margin-top:4px;">Camera Crate Quality Certificate</h4>
+          <p style="font-size:0.75rem; color:var(--slate);">Snap crate photo to lock certified quality grade before buyer pickup.</p>
+          
+          <input type="file" id="crateCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCrateImageUpload(event)">
+          <button class="btn-main" style="padding:9px; font-size:0.85rem; margin-top:8px;" onclick="document.getElementById('crateCameraInput').click()">
+            <i class="fa fa-camera"></i> Capture Crate Photo
+          </button>
+
+          <div id="certSealBox" style="display:none; background:white; border:1px solid #86efac; border-radius:8px; padding:8px; margin-top:8px; font-size:0.78rem; text-align:left;">
+            <strong style="color:var(--primary);"><i class="fa fa-check-circle"></i> Digital Certificate Issued</strong><br>
+            <span id="certIdText">Cert #...</span><br>
+            <span id="certDetailsText">Grade A (96.8%)</span>
+          </div>
+        </div>
+
+        <div style="background:white; border:1px solid var(--border); border-radius:12px; padding:14px; box-shadow:var(--shadow);">
+          <div class="form-group">
+            <label>Harvest Quantity (kg)</label>
+            <input type="number" id="sellQty" value="500" min="50">
+          </div>
+          <div class="form-group">
+            <label>Quality Grade</label>
+            <select id="sellGrade" onchange="updateCalculatedPayout()">
+              <option value="Grade A">Grade A (Certified Premium Retail)</option>
+              <option value="Grade B">Grade B (Commercial / HoReCa)</option>
+              <option value="Grade C">Grade C (Pulping / Processing)</option>
+            </select>
+          </div>
+
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.8rem; color:#1e40af;">
+            <div style="font-weight:700;">Split Settlement Guarantee:</div>
+            <div>• <strong>40% Farmgate Advance:</strong> Instant UPI upon truck loading</div>
+            <div>• <strong>60% Final Settlement:</strong> Disbursed upon terminal weigh-in</div>
+            <div style="margin-top:4px; font-weight:bold; color:var(--primary);" id="splitPayoutPreview">
+              Calculating...
+            </div>
+          </div>
+
+          <button class="btn-main" onclick="submitListing()"><i class="fa fa-paper-plane"></i> Publish Lot for Wholesale Buyers</button>
+        </div>
+
+        <div style="font-size:0.95rem; font-weight:700; margin:16px 0 8px;">📋 Your Active Produce Lots</div>
+        <div id="myListingsContainer">Loading listings...</div>
+      </div>
+
+      <!-- TAB 2: FREIGHT ESTIMATOR -->
+      <div id="tabFreight" style="display:none;">
+        <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:12px; padding:14px; margin-bottom:14px;">
+          <h4 style="color:#1e40af; font-size:0.95rem;"><i class="fa fa-calculator"></i> Real Net Take-Home Calculator</h4>
+          <p style="font-size:0.78rem; color:#1e3a8a; margin-top:2px;">
+            Simulate exact transit diesel, toll tariffs, and loading fees from Chennayyagunta to any city mandi.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label>Target Mandi Destination</label>
+          <select id="freightDestMandi" onchange="runFreightEstimator()">
+            <option value="Tirupati Wholesale Hub">Tirupati Wholesale Hub (28 km - Local)</option>
+            <option value="Madanapalle APMC">Madanapalle APMC (115 km)</option>
+            <option value="Koyambedu Wholesale (Chennai)">Koyambedu Chennai (135 km - High Demand)</option>
+            <option value="Kolar APMC (Karnataka)">Kolar APMC (140 km)</option>
+            <option value="Bengaluru (Yeshwanthpur)">Bengaluru Yeshwanthpur (185 km - Premium)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Simulated Load (kg)</label>
+          <input type="number" id="freightLoadKg" value="500" min="50" step="50" oninput="runFreightEstimator()">
+        </div>
+
+        <div class="freight-result-box" id="freightResultBox">
+          <div style="text-align:center; padding:10px;"><i class="fa fa-spinner fa-spin"></i> Calculating freight...</div>
+        </div>
+      </div>
+
+      <!-- TAB 3: REGIONAL ARBITRAGE -->
+      <div id="tabArbitrage" style="display:none;">
+        <div class="arbitrage-card">
+          <h4 style="font-size:0.95rem; margin-bottom:4px; color:var(--primary);">
+            <i class="fa fa-balance-scale"></i> Regional Mandi Price Matrix
+          </h4>
+          <p style="font-size:0.75rem; color:var(--slate); margin-bottom:12px;">
+            Real-time auction rates across major southern consumption centers:
+          </p>
+          <div id="arbitrageList">Loading corridor rates...</div>
+        </div>
+      </div>
+
+      <!-- TAB 4: COOL STORAGE -->
+      <div id="tabStorage" style="display:none;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px; margin-bottom:14px;">
+          <h4 style="color:#1e40af; font-size:0.92rem;"><i class="fa fa-snowflake"></i> Avoid Distress Selling</h4>
+          <p style="font-size:0.78rem; color:#1e3a8a; margin-top:2px;">
+            Store produce in solar micro-cooling chambers for ₹6/crate/day while waiting for market prices to recover.
+          </p>
+        </div>
+        <div class="form-group">
+          <label>Facility</label>
+          <select id="storageFacility">
+            <option value="Madanapalle Solar Cool-Chamber Hub">Madanapalle Solar Hub (4.2 km) - 12°C</option>
+            <option value="Pileru FPO Pre-Cooling Unit">Pileru Pre-Cooling Unit (8.5 km) - 11.5°C</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Crates</label>
+            <input type="number" id="storageCrates" value="20">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Days</label>
+            <input type="number" id="storageDays" value="5">
+          </div>
+        </div>
+        <button class="btn-main" onclick="bookColdStorage()"><i class="fa fa-calendar-check"></i> Book Cool-Room Space</button>
+      </div>
+
+      <!-- TAB 5: INPUT POOLING -->
+      <div id="tabInputs" style="display:none;">
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:14px;">
+          <h4 style="color:#166534; font-size:0.92rem;"><i class="fa fa-layer-group"></i> Reverse Logistics Bulk Buying</h4>
+          <p style="font-size:0.78rem; color:#14532d; margin-top:2px;">
+            Save up to 25% on seeds and bio-fertilizer. Goods return on empty delivery trucks with zero freight fees.
+          </p>
+        </div>
+        <div id="inputCatalogList">Loading input catalog...</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- NOTIFICATION DRAWER MODAL -->
+  <div class="notif-modal-overlay" id="notifOverlay" onclick="closeNotifModal()"></div>
+  <div class="notif-modal" id="notifModal">
+    <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-size:1rem; display:flex; align-items:center; gap:8px;">
+        <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp & SMS Receipts
+      </h3>
+      <button class="icon-btn" style="color:var(--dark);" onclick="closeNotifModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div style="padding:14px; overflow-y:auto; flex:1;" id="notifListContainer">
+      <p style="color:var(--slate); font-size:0.85rem;">No receipts yet.</p>
+    </div>
+  </div>
+
+  <!-- VERNACULAR AI VOICE SHEET -->
+  <div class="ai-voice-overlay" id="aiVoiceOverlay" onclick="closeAIVoiceSheet()"></div>
+  <div class="ai-voice-sheet" id="aiVoiceSheet">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="font-size:1.05rem; display:flex; align-items:center; gap:8px; color:var(--primary);">
+        <i class="fa fa-robot"></i> కిసాన్ మిత్ర AI (KisanMitra Voice)
+      </h3>
+      <button class="icon-btn" style="color:var(--dark);" onclick="closeAIVoiceSheet()"><i class="fa fa-times"></i></button>
+    </div>
+
+    <div class="voice-lang-bar">
+      <button class="voice-lang-btn active" id="btnVoiceTe" onclick="setVoiceInputLang('te-IN')">🎙️ తెలుగు (Telugu)</button>
+      <button class="voice-lang-btn" id="btnVoiceEn" onclick="setVoiceInputLang('en-IN')">🎙️ English / Any</button>
+    </div>
+
+    <div class="ai-voice-wave" id="aiMicWave" onclick="toggleSpeechRecording()">
+      <i class="fa fa-microphone" id="aiMicIcon"></i>
+    </div>
+    <div style="text-align:center; font-size:0.75rem; font-weight:bold; color:var(--slate); margin-bottom:8px;" id="aiStatusText">
+      మైక్ నొక్కి మాట్లాడండి (Tap to Speak)
+    </div>
+
+    <div class="ai-speech-transcript" id="aiTranscript">
+      "ఈరోజు టమోటా రేటు ఎంత ఉంది?" / "What is the tomato price today?"
+    </div>
+
+    <div class="ai-response-box" id="aiResponseBox">
+      <div class="ai-te-section" id="aiTeText">
+        నమస్కారం! నేను మీ కిసాన్ మిత్ర AI ని. మదనపల్లె మార్కెట్ ధరలు లేదా పంట సలహాల కోసం మాట్లాడండి.
+      </div>
+      <div class="ai-en-section" id="aiEnText">
+        Hello! I am your KisanMitra AI. Speak in Telugu or English to get live market rates and harvest advisory.
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn-main" style="flex:1; padding:10px; font-size:0.82rem;" onclick="speakAIResponse('te')">
+        <i class="fa fa-volume-up"></i> తెలుగులో వినండి (Telugu Audio)
+      </button>
+      <button class="btn-secondary" style="flex:1; padding:10px; font-size:0.82rem;" onclick="speakAIResponse('en')">
+        <i class="fa fa-volume-up"></i> English Audio
+      </button>
+      <button class="btn-secondary" style="padding:10px 12px; background:#ef4444;" onclick="stopSpeech()">
+        <i class="fa fa-stop"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DRAWER -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar-drawer" id="sidebarDrawer">
+    <div class="sidebar-header">
+      <div class="sidebar-avatar" id="sideAvatar">S</div>
+      <h3 id="sideName">Farmer Name</h3>
+      <p style="font-size:0.8rem; opacity:0.85;" id="sidePhone">+91 00000 00000</p>
+    </div>
+    <ul class="sidebar-menu">
+      <li onclick="toggleSidebar()"><i class="fa fa-home"></i> <span>Market Home</span></li>
+      <li onclick="openAIVoiceSheet(); toggleSidebar();"><i class="fa fa-robot"></i> <span>కిసాన్ మిత్ర Voice AI</span></li>
+      <li onclick="openNotifModal(); toggleSidebar();"><i class="fa fa-bell"></i> <span>Message Receipts</span></li>
+      <li onclick="toggleLanguage(); toggleSidebar();"><i class="fa fa-language"></i> <span>Switch Language (తెలుగు)</span></li>
+      <li onclick="window.location.href='/driver'"><i class="fa fa-truck"></i> <span>Driver Route Manifest</span></li>
+      <li onclick="window.location.href='/buyer'"><i class="fa fa-store"></i> <span>Wholesale Buyer Hub</span></li>
+      <li onclick="handleLogout()" style="color:#ef4444;"><i class="fa fa-sign-out-alt"></i> <span>Logout</span></li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+  const API = "/api/v1";
+  let activeFarmer = null;
+  let activeCertId = "";
+  let selectedCrop = "Tomato";
+  let liveModalRate = 33.00;
+  let currentLang = "EN";
+  let voiceInputLang = "te-IN";
+  let isRecording = false;
+  let speechRecognition = null;
+  let knownAlertIds = new Set();
+
+  let currentTeText = "ఈరోజు మదనపల్లె మార్కెట్లో నాణ్యమైన గ్రేడ్-A టమోటా ధర ₹33 నుండి ₹36/kg గా ఉంది.";
+  let currentEnText = "Today's Grade-A Tomato rate in Madanapalle is ₹33–₹36/kg.";
+
+  function setVoiceInputLang(lang) {
+    voiceInputLang = lang;
+    document.getElementById('btnVoiceTe').classList.toggle('active', lang === 'te-IN');
+    document.getElementById('btnVoiceEn').classList.toggle('active', lang === 'en-IN');
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === "EN" ? "TE" : "EN";
+    document.getElementById('langToggleBtn').innerText = currentLang === "EN" ? "తెలుగు" : "English";
+    updateCalculatedPayout();
+  }
+
+  /* --- NOTIFICATIONS ENGINE --- */
+  function openNotifModal() {
+    document.getElementById('notifModal').style.display = 'flex';
+    document.getElementById('notifOverlay').style.display = 'block';
+    document.getElementById('liveToastBox').style.display = 'none';
+  }
+
+  function closeNotifModal() {
+    document.getElementById('notifModal').style.display = 'none';
+    document.getElementById('notifOverlay').style.display = 'none';
+  }
+
+  async function pollNotifications() {
+    if (!activeFarmer) return;
+    try {
+      const res = await fetch(`${API}/notifications/${activeFarmer.phone_number}`);
+      const list = await res.json();
+      document.getElementById('notifBadgeCount').innerText = list.length;
+
+      if (list.length > 0 && !knownAlertIds.has(list[0].id)) {
+        list.forEach(m => knownAlertIds.add(m.id));
+        showToast(list[0]);
+      }
+
+      const container = document.getElementById('notifListContainer');
+      if (list.length === 0) {
+        container.innerHTML = "<p style='color:var(--slate); font-size:0.85rem;'>No receipts yet.</p>";
+        return;
+      }
+
+      container.innerHTML = list.map(m => `
+        <div class="msg-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:0.85rem; color:#166534;"><i class="fab fa-whatsapp"></i> WhatsApp Receipt</strong>
+            <span style="font-size:0.7rem; color:var(--slate);">${m.timestamp}</span>
+          </div>
+          <p style="font-size:0.8rem; color:#1e293b; margin-bottom:4px;">${m.body_en}</p>
+          <p style="font-size:0.75rem; color:#475569; font-style:italic;">${m.body_te}</p>
+          <div style="font-size:0.68rem; color:var(--slate); margin-top:4px;">Ref: ${m.txn_id}</div>
+        </div>
+      `).join("");
+    } catch(e) {}
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('liveToastBox');
+    document.getElementById('toastTime').innerText = msg.timestamp;
+    document.getElementById('toastTitle').innerText = msg.title;
+    document.getElementById('toastBody').innerText = msg.body_en;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 6000);
+  }
+
+  /* --- VERNACULAR AI VOICE ENGINE --- */
+  function openAIVoiceSheet() {
+    document.getElementById('aiVoiceSheet').style.display = 'flex';
+    document.getElementById('aiVoiceOverlay').style.display = 'block';
+  }
+
+  function closeAIVoiceSheet() {
+    stopSpeech();
+    document.getElementById('aiVoiceSheet').style.display = 'none';
+    document.getElementById('aiVoiceOverlay').style.display = 'none';
+  }
+
+  function toggleSpeechRecording() {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+  function startRecording() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert("Microphone recognition not supported in this browser. Please use Chrome/Edge.");
+      return;
+    }
+
+    speechRecognition = new SpeechRec();
+    speechRecognition.lang = voiceInputLang;
+    speechRecognition.continuous = false;
+    speechRecognition.interimResults = false;
+
+    speechRecognition.onstart = () => {
+      isRecording = true;
+      document.getElementById('aiMicWave').classList.add('listening');
+      document.getElementById('aiStatusText').innerText = "వినబడుతోంది... మాట్లాడండి (Listening...)";
+      document.getElementById('aiTranscript').innerText = "Listening to your voice...";
+    };
+
+    speechRecognition.onresult = async (event) => {
+      const spokenText = event.results[0][0].transcript;
+      document.getElementById('aiTranscript').innerText = `"${spokenText}"`;
+      document.getElementById('aiStatusText').innerText = "విశ్లేషిస్తోంది... (Thinking...)";
+      stopRecording();
+      await queryAIBigBrain(spokenText);
+    };
+
+    speechRecognition.onerror = (e) => {
+      stopRecording();
+      document.getElementById('aiStatusText').innerText = "సరిగా వినిపించలేదు, మళ్ళీ మైక్ నొక్కండి (Tap mic again)";
+    };
+
+    speechRecognition.onend = () => {
+      stopRecording();
+    };
+
+    speechRecognition.start();
+  }
+
+  function stopRecording() {
+    isRecording = false;
+    document.getElementById('aiMicWave').classList.remove('listening');
+    if (speechRecognition) {
+      try { speechRecognition.stop(); } catch(e){}
+    }
+  }
+
+  async function queryAIBigBrain(userQuestion) {
+    try {
+      const res = await fetch(`${API}/ai/assist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: userQuestion, language: voiceInputLang === "te-IN" ? "te" : "en" })
+      });
+      const data = await res.json();
+      currentTeText = data.telugu;
+      currentEnText = data.english;
+
+      document.getElementById('aiTeText').innerText = data.telugu;
+      document.getElementById('aiEnText').innerText = data.english;
+      document.getElementById('aiStatusText').innerText = "సమాధానం సిద్ధంగా ఉంది (Answer Ready)";
+
+      speakAIResponse(data.is_telugu_dominant ? 'te' : 'en');
+    } catch(err) {
+      document.getElementById('aiTeText').innerText = "సర్వర్ సమస్య ఏర్పడింది.";
+      document.getElementById('aiEnText').innerText = "Error reaching KisanMitra AI.";
+    }
+  }
+
+  function speakAIResponse(langChoice) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const textToSpeak = langChoice === 'te' ? currentTeText : currentEnText;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = langChoice === 'te' ? "te-IN" : "en-IN";
+      utterance.rate = 0.92;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    stopRecording();
+  }
+
+  /* --- CORE DASHBOARD LOGIC --- */
+  window.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem("kisandirect_farmer");
+    if (saved) {
+      try {
+        activeFarmer = JSON.parse(saved);
+        initDashboard();
+      } catch(e) {
+        localStorage.removeItem("kisandirect_farmer");
+      }
+    }
+  });
+
+  function selectCrop(crop) {
+    selectedCrop = crop;
+    document.querySelectorAll('.crop-chip').forEach(el => el.classList.remove('active'));
+    if (crop === 'Tomato') document.getElementById('chipTomato').classList.add('active');
+    if (crop === 'Green Chilli') document.getElementById('chipGreenChilli').classList.add('active');
+    if (crop === 'Onion') document.getElementById('chipOnion').classList.add('active');
+    if (crop === 'Dry Red Chilli') document.getElementById('chipDryChilli').classList.add('active');
+    if (crop.includes('Mango')) document.getElementById('chipMango').classList.add('active');
+
+    document.getElementById('currentCommodityLabel').innerText = crop;
+    refreshMarketData();
+    loadCorridorComparison();
+    runFreightEstimator();
+  }
+
+  function onMarketChanged() {
+    refreshMarketData();
+    loadCorridorComparison();
+    runFreightEstimator();
+  }
+
+  function switchView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+  }
+
+  function switchSubTab(tab) {
+    document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tabMarket').style.display = 'none';
+    document.getElementById('tabFreight').style.display = 'none';
+    document.getElementById('tabArbitrage').style.display = 'none';
+    document.getElementById('tabStorage').style.display = 'none';
+    document.getElementById('tabInputs').style.display = 'none';
+
+    if (tab === 'market') {
+      document.getElementById('tabMarket').style.display = 'block';
+      document.getElementById('tabMarketBtn').classList.add('active');
+    } else if (tab === 'freight') {
+      document.getElementById('tabFreight').style.display = 'block';
+      document.getElementById('tabFreightBtn').classList.add('active');
+      runFreightEstimator();
+    } else if (tab === 'arbitrage') {
+      document.getElementById('tabArbitrage').style.display = 'block';
+      document.getElementById('tabArbitrageBtn').classList.add('active');
+      loadCorridorComparison();
+    } else if (tab === 'storage') {
+      document.getElementById('tabStorage').style.display = 'block';
+      document.getElementById('tabStorageBtn').classList.add('active');
+    } else if (tab === 'inputs') {
+      document.getElementById('tabInputs').style.display = 'block';
+      document.getElementById('tabInputsBtn').classList.add('active');
+      loadInputCatalog();
+    }
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebarDrawer').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+
+  async function handlePinLogin() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const pin = document.getElementById('loginPin').value.trim();
+    if (!phone || !pin) { alert("Enter mobile number and PIN"); return; }
+
+    const res = await fetch(`${API}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone_number: phone, pin: pin })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.detail || "Login failed"); return; }
+
+    if (data.status === "REGISTER_REQUIRED" || data.status === "PIN_SETUP_REQUIRED") {
+      switchView('viewProfileSetup');
+    } else {
+      activeFarmer = data.farmer;
+      localStorage.setItem("kisandirect_farmer", JSON.stringify(activeFarmer));
+      initDashboard();
+    }
+  }
+
+  async function handleRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const village = document.getElementById('regVillage').value.trim();
+    const district = document.getElementById('regDistrict').value.trim();
+    const hub = document.getElementById('regFpoHub').value;
+    const pin = document.getElementById('regPin').value.trim();
+    const upi = document.getElementById('regUpi').value.trim();
+    const phone = document.getElementById('loginPhone').value.trim() || "9876543210";
+
+    const payload = {
+      phone_number: phone,
+      pin: pin,
+      full_name: name,
+      village: village,
+      district: district || "Chittoor",
+      fpo_hub: hub,
+      land_acres: 3.5,
+      primary_crop: selectedCrop,
+      upi_id: upi || "farmer@upi"
+    };
+
+    const res = await fetch(`${API}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) { alert("Registration error: " + data.detail); return; }
+
+    activeFarmer = data.farmer;
+    localStorage.setItem("kisandirect_farmer", JSON.stringify(activeFarmer));
+    initDashboard();
+  }
+
+  function initDashboard() {
+    document.getElementById('sideAvatar').innerText = activeFarmer.full_name[0].toUpperCase();
+    document.getElementById('sideName').innerText = activeFarmer.full_name;
+    document.getElementById('sidePhone').innerText = activeFarmer.phone_number;
+
+    switchView('viewHome');
+    refreshMarketData();
+    loadCorridorComparison();
+    loadFarmerListings();
+    runFreightEstimator();
+
+    // Start Real-Time Notification Polling
+    setInterval(pollNotifications, 2500);
+    pollNotifications();
+  }
+
+  async function refreshMarketData() {
+    const market = document.getElementById('selectedMarket').value;
+    const res = await fetch(`${API}/pricing/mandi-spot?commodity=${encodeURIComponent(selectedCrop)}&market=${encodeURIComponent(market)}`);
+    const data = await res.json();
+    
+    liveModalRate = data.modal_price_per_kg;
+    document.getElementById('spotPriceDisplay').innerText = `₹${liveModalRate.toFixed(2)} / kg`;
+    document.getElementById('rateModal').innerText = `₹${liveModalRate.toFixed(2)}`;
+    document.getElementById('rateMin').innerText = `₹${data.min_price_per_kg.toFixed(2)}`;
+    document.getElementById('rateMax').innerText = `₹${data.max_price_per_kg.toFixed(2)}`;
+    document.getElementById('marketSourceTag').innerText = `${data.market}`;
+
+    const advRes = await fetch(`${API}/intelligence/hold-vs-sell?crop=${encodeURIComponent(selectedCrop)}&mandi=${encodeURIComponent(market)}`);
+    const advData = await advRes.json();
+    document.getElementById('advisoryHeadline').innerText = `⏳ ${advData.headline}`;
+    document.getElementById('advisoryBody').innerText = advData.reasoning;
+    document.getElementById('advisoryDelta').innerText = `Projected corridor premium: ${advData.expected_price_delta_pct}`;
+
+    updateCalculatedPayout();
+  }
+
+  async function runFreightEstimator() {
+    const mandi = document.getElementById('freightDestMandi').value;
+    const loadKg = parseFloat(document.getElementById('freightLoadKg').value) || 500;
+    const box = document.getElementById('freightResultBox');
+
+    try {
+      const res = await fetch(`${API}/logistics/freight-estimator?destination_mandi=${encodeURIComponent(mandi)}&quantity_kg=${loadKg}&commodity=${encodeURIComponent(selectedCrop)}`);
+      const d = await res.json();
+
+      box.innerHTML = `
+        <div style="font-weight:700; color:var(--primary); font-size:0.92rem; margin-bottom:8px;">
+          📍 Route: ${d.origin} ➔ ${d.destination_mandi} (${d.distance_km} km)
+        </div>
+        <div class="freight-row"><span>Load Quantity:</span><strong>${loadKg} kg (${d.crate_count} crates)</strong></div>
+        <div class="freight-row"><span>Gross Crop Value:</span><strong>₹${d.gross_revenue.toLocaleString()}</strong></div>
+        <div class="freight-row" style="color:#ef4444;"><span>Transit Fuel:</span><span>- ₹${d.fuel_and_vehicle_cost}</span></div>
+        <div class="freight-row" style="color:#ef4444;"><span>Crate Handling:</span><span>- ₹${d.crate_handling_cost}</span></div>
+        <div class="freight-row" style="color:#ef4444;"><span>Tolls:</span><span>- ₹${d.toll_share}</span></div>
+        <div class="freight-row" style="border-top:1.5px solid #cbd5e1; font-weight:bold;">
+          <span>Total Freight (${d.freight_per_kg}/kg):</span><span style="color:#ef4444;">₹${d.total_freight_cost}</span>
+        </div>
+        <div style="background:#dcfce7; border:1.5px solid #86efac; border-radius:8px; padding:10px; margin-top:10px; text-align:center;">
+          <div style="font-size:0.75rem; color:#166534; font-weight:bold;">REAL NET TAKE-HOME EARNING (తల్లి లాభం)</div>
+          <div style="font-size:1.45rem; font-weight:900; color:#14532d;">₹${d.net_take_home_profit.toLocaleString()}</div>
+          <div style="font-size:0.78rem; color:#166534; font-weight:700; margin-top:2px;">
+            Effective Net Realized: ₹${d.net_realized_rate_per_kg} / kg
+          </div>
+        </div>
+      `;
+    } catch(e) {}
+  }
+
+  async function loadCorridorComparison() {
+    const box = document.getElementById('arbitrageList');
+    try {
+      const res = await fetch(`${API}/pricing/corridor-compare?commodity=${encodeURIComponent(selectedCrop)}`);
+      const data = await res.json();
+      box.innerHTML = data.map(m => `
+        <div class="arbitrage-item" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.82rem;">
+          <div>
+            <strong>${m.market}</strong> <small style="color:var(--slate);">(${m.state})</small><br>
+            <span style="font-size:0.75rem; color:var(--slate);">Distance: ${m.distance_km} km</span>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1rem; font-weight:800; color:var(--primary);">₹${m.modal_price_per_kg.toFixed(2)}/kg</div>
+            <span style="padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.7rem; background:#dcfce7; color:#166534;">${m.arbitrage_diff}</span>
+          </div>
+        </div>
+      `).join("");
+    } catch(e) {}
+  }
+
+  function updateCalculatedPayout() {
+    const qty = parseFloat(document.getElementById('sellQty').value) || 0;
+    const grade = document.getElementById('sellGrade').value;
+    const multiplier = grade === "Grade A" ? 1.15 : (grade === "Grade B" ? 1.00 : 0.85);
+    const floorRate = (liveModalRate * multiplier * 1.10).toFixed(2);
+    const total = Math.round(qty * floorRate);
+    const advance = Math.round(total * 0.40);
+    const finalBal = total - advance;
+
+    const advText = currentLang === "TE" ? "40% అడ్వాన్స్" : "Advance (40% Farmgate)";
+    const finText = currentLang === "TE" ? "60% బ్యాలెన్స్" : "Final (60%)";
+
+    document.getElementById('splitPayoutPreview').innerHTML = 
+      `${advText}: <strong>₹${advance}</strong> | ${finText}: <strong>₹${finalBal}</strong> | Total: <strong>₹${total}</strong> (@ ₹${floorRate}/kg)`;
+  }
+  document.getElementById('sellQty').addEventListener('input', updateCalculatedPayout);
+
+  async function handleCrateImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("image_file", file);
+
+    const sealBox = document.getElementById('certSealBox');
+    sealBox.style.display = 'block';
+    document.getElementById('certIdText').innerText = "Analyzing quality parameters...";
+
+    const res = await fetch(`${API}/quality/analyze-crate`, { method: "POST", body: formData });
+    const data = await res.json();
+    activeCertId = data.certificate_id;
+    document.getElementById('certIdText').innerHTML = `<strong>Certificate #${data.certificate_id}</strong>`;
+    document.getElementById('certDetailsText').innerText = `${data.detected_grade} (${data.confidence_score}%) • ${data.color_profile}`;
+  }
+
+  async function submitListing() {
+    const qty = parseFloat(document.getElementById('sellQty').value) || 100;
+    const grade = document.getElementById('sellGrade').value;
+
+    const payload = {
+      farmer_name: activeFarmer.full_name,
+      phone_number: activeFarmer.phone_number,
+      fpo_hub_id: activeFarmer.fpo_hub,
+      crop: selectedCrop,
+      grade: grade,
+      quality_confidence: 96.8,
+      quality_certificate_id: activeCertId || "AP-VERIFIED",
+      quantity_kg: qty,
+      mandi_benchmark_price: liveModalRate,
+      is_perishable: true
+    };
+
+    const res = await fetch(`${API}/produce/list`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert(`Published ${data.quantity_kg} kg of ${selectedCrop} to buyer network!`);
+    loadFarmerListings();
+  }
+
+  async function loadFarmerListings() {
+    const container = document.getElementById('myListingsContainer');
+    const res = await fetch(`${API}/produce/catalog`);
+    const all = await res.json();
+    if (!all || all.length === 0) {
+      container.innerHTML = "<p style='color:#64748b; font-size:0.85rem;'>No produce lots published yet.</p>";
+      return;
+    }
+    container.innerHTML = all.map(l => `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid var(--primary); padding:10px 12px; border-radius:8px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-weight:700;">
+          <span>#${l.id}: ${l.crop} (${l.grade})</span>
+          <span style="color:var(--primary);">${l.quantity_kg} kg</span>
+        </div>
+        <div style="font-size:0.75rem; color:#64748b; margin:2px 0 6px;">
+          Farmer: ${l.farmer_name} • Cert: ${l.quality_certificate_id || 'AP-VERIFIED'} • Benchmark: ₹${l.mandi_benchmark_price}/kg
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function bookColdStorage() {
+    const facility = document.getElementById('storageFacility').value;
+    const crates = parseInt(document.getElementById('storageCrates').value);
+    const days = parseInt(document.getElementById('storageDays').value);
+    const res = await fetch(`${API}/cold-storage/book`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ farmer_name: activeFarmer.full_name, facility_name: facility, crate_count: crates, days: days })
+    });
+    const data = await res.json();
+    alert(`Success! Booking #${data.booking_id} confirmed for ₹${data.total_cost}.`);
+  }
+
+  async function loadInputCatalog() {
+    const res = await fetch(`${API}/inputs/catalog`);
+    const data = await res.json();
+    const box = document.getElementById('inputCatalogList');
+    box.innerHTML = data.map(item => `
+      <div style="background:white; border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-weight:700;">
+          <span style="font-size:0.88rem;">${item.item}</span>
+          <span style="color:#16a34a; font-size:0.82rem;">Save ${item.savings_pct}</span>
+        </div>
+        <div style="font-size:0.8rem; margin:4px 0;">
+          Pooled Price: <strong>₹${item.pooled_price}</strong> <strike style="color:#94a3b8; font-size:0.75rem;">₹${item.retail_mrp}</strike>
+        </div>
+        <button class="btn-main" style="padding:8px; font-size:0.8rem;" onclick="orderInput('${item.item}')">
+          <i class="fa fa-plus-circle"></i> Join Group Buy (1 Unit)
+        </button>
+      </div>
+    `).join("");
+  }
+
+  async function orderInput(itemName) {
+    const res = await fetch(`${API}/inputs/order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ farmer_name: activeFarmer.full_name, input_item: itemName, quantity: 1, unit: "pack" })
+    });
+    const data = await res.json();
+    alert(`Order #${data.order_id} recorded!`);
+  }
+
+  function handleLogout() {
+    activeFarmer = null;
+    localStorage.removeItem("kisandirect_farmer");
+    toggleSidebar();
+    switchView('viewLogin');
+  }
+</script>
+</body>
+</html>

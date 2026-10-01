@@ -1,0 +1,20 @@
+﻿{
+  "name": "KisanDirect Farmer Portal",
+  "short_name": "KisanDirect",
+  "description": "Direct Farmer-to-Buyer Marketplace and Fair-Price Corridor",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#15803d",
+  "lang": "te-IN",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
