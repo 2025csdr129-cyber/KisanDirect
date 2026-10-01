@@ -1,59 +1,129 @@
 # 🌱 KisanDirect (కిసాన్ డైరెక్ట్)
-> **Direct Regional Agricultural Marketplace, Mandi Intelligence & Split-Escrow Portal**  
-> *Engineered for smallholder farmers and FPO clusters in the Rayalaseema / Chittoor agricultural corridor.*
+> **Hyper-Local Agricultural Marketplace, Live Corridor Intelligence & 40/60 Split-Escrow Platform**  
+> *Engineered for smallholder farmers, FPOs, wholesale buyers, and logistics operators across the Rayalaseema & Chittoor agricultural belt.*
 
 ---
 
-## 📌 Overview
+## 📌 Executive Summary
 
-**KisanDirect** is a hyper-local, bilingual farmgate-to-buyer agri-commerce engine designed to eliminate commission agent leakage, distress selling, and opaque weighment fraud for farmers in Southern Andhra Pradesh (Madanapalle, Tirupati, Pileru, Chittoor) and border consumption hubs (Chennai, Bengaluru, Kolar, Guntur).
+**KisanDirect** is a full-stack, mobile-first agricultural ecosystem built to eliminate middleman commission leakage, distress selling, and opaque weighment manipulation for farmers in Southern Andhra Pradesh (Madanapalle, Tirupati, Pileru, Chittoor) and border consumption centers (Chennai, Bengaluru, Kolar, Guntur).
 
-The platform bridges real-time physical mandi auction data with digital contracting, vehicle route optimization (CVRP), automated freight estimation, and a vernacular-first voice AI assistant.
+The platform bridges real-time electronic mandi benchmarks with digital smart contracting, Google OR-Tools vehicle routing (CVRP), automated freight & net-profit calculation, and a vernacular-first voice assistant (**KisanMitra AI**) tailored for busy, non-technical farmers.
 
 ---
 
-## ✨ Key Features
+## 🏗️ System Architecture & Workflow
+[ 👨‍🌾 Farmer Portal (PWA) ] 
+      │  ├── Voice / Tanglish AI (KisanMitra)
+      │  ├── Multi-Crop Corridor Benchmark Scanner
+      │  ├── Camera AI Crate Inspection & Cert Stamping
+      │  └── Net Take-Home Freight Calculator
+      ▼
+      [ ⚡ FastAPI Core Application (REST Engine) ]
+│  ├── SQLite / SQLAlchemy Persistent Data Layer
+│  ├── Logistics Optimization (Google OR-Tools CVRP)
+│  └── In-App WhatsApp / SMS Notification Engine
+▼
+┌───────────────────────────┴───────────────────────────┐
+▼                                                       ▼
+[ 🏢 Wholesale Buyer Hub ]                       [ 🚚 Driver Manifest ]
+├── 40% Farmgate Advance Lock                    ├── Dynamic Cluster Pickup Stops
+├── 60% Terminal Settlement Vault                ├── Real-Time GPS Terminal Navigation
+└── APMC Compliant Digital Weighment Slips       └── Return-Logistics Input Delivery
+---
 
-### 1. 🌾 Real-Time Multi-Crop & Multi-Mandi Price Intelligence
-- Ground benchmarks calibrated for regional cash crops: **Tomato (Hybrid/Naati)**, **Green Chilli (Teja/G4)**, **Dry Red Chilli**, **Onion (Bellary)**, and **Mango (Totapuri)**.
-- Live corridor comparison matrix across **Madanapalle APMC**, **Tirupati Wholesale**, **Kolar APMC**, **Koyambedu Wholesale (Chennai)**, **Bengaluru (Yeshwanthpur)**, and **Guntur Mirchi Yard**.
-- **72-Hour Hold vs. Sell Predictive Advisory** based on regional mandi arrivals and destination consumption pull.
+## ✨ Core Modules & Functionality
+
+### 1. 🌾 Real-Time Multi-Crop & Multi-Mandi Intelligence
+* **Regional Cash Crops Covered:**
+  * **Tomato** (Hybrid & Naati varieties)
+  * **Green Chilli** (Teja & G4 grades)
+  * **Dry Red Chilli** (Guntur export & commercial standards)
+  * **Onion** (Bellary & Nasik lines)
+  * **Mango** (Totapuri pulp & Banginapalli table varieties)
+* **Live Corridors Synced:** Madanapalle APMC, Tirupati Wholesale Hub, Kolar Gold APMC, Chennai Koyambedu, Bengaluru Yeshwanthpur, and Guntur Mirchi Yard.
+* **72-Hour Hold vs. Sell Engine:** Ingests local mandi arrival volumes and regional terminal demand curves to issue actionable harvest advisories.
 
 ### 2. 🤖 "KisanMitra AI" Vernacular Voice Assistant
-- Floating voice microphone accessible across mobile screens.
-- Supports **Telugu (`te-IN`)**, **English (`en-IN`)**, and **Tanglish/phonetic Telugu** queries.
-- Powered by Web Speech Recognition and dual-text/audio SpeechSynthesis (TTS) playback for hands-free advisory in the field.
-- Answers queries on real-time commodity prices, pest management, harvest timing, and cold storage availability.
+* **Native Dialect Understanding:** Processes native Telugu script (`te-IN`), English (`en-IN`), and Romanized Tanglish (*"kotha eppudu koyyali"*, *"tomato rate entha"*).
+* **Hands-Free Speech Loop:** Powered by the browser Web Speech API for voice dictation and SpeechSynthesis for audio playback in field conditions.
+* **Domain Knowledge:** Real-time commodity rates, pest diagnostics (leaf curl, fruit borer, early blight), harvest advisories, and micro-cold storage checks.
 
 ### 3. 🔒 40/60 Split Smart Escrow & Digital Weighment Slips
-- **40% Farmgate Advance:** Instantly locked and disbursed via UPI upon vehicle check-in and farmgate crate loading.
-- **60% Final Settlement:** Released automatically upon destination terminal weighment verification.
-- **Official Bilingual APMC Weighment Slip:** Printable/PDF-exportable receipts compliant with AP Agricultural Market rules, featuring tare crate deductions and 100% direct-channel cess exemptions.
+* **Split Settlement Protocol:**
+  * **40% Farmgate Advance:** Locked into escrow upon digital match and disbursed immediately via UPI upon farmgate truck check-in and crate loading.
+  * **60% Final Settlement:** Disbursed directly to farmer UPI accounts once physical weighment and quality checks are verified at the terminal.
+* **Official Digital Weighment Slip:** Printable/PDF-exportable APMC-standard bill including tare weight deductions (4% crate standard) and 100% direct-channel market cess waiver verification.
 
 ### 4. 🚚 Interactive Freight & Net Profit Calculator
-- Computes vehicle fuel allocation (₹11/km pooled commercial tariff), crate handling charges (₹6/crate), and toll fees from the origin cluster (Chennayyagunta/Chittoor) to any destination terminal.
-- Calculates the **Real Net Take-Home Margin (తల్లి లాభం)** per kilogram before dispatching produce.
+* **Accurate Logistics Cost Breakdown:** Evaluates vehicle fuel allocation (₹11/km shared mini-truck tariff), crate handling/loading charges (₹6/crate), and state highway toll tariffs from the Chennayyagunta/Chittoor cluster to target city mandis.
+* **Net Take-Home Metric (తల్లి లాభం):** Displays the exact realized price per kg after transport deductions before dispatching freight.
 
-### 5. ❄️ Micro-Cold Storage & Collective Input Pooling
-- On-demand booking for solar micro-cold rooms at ₹6/crate/day to prevent post-harvest perishability loss.
-- Reverse-logistics bulk buying for seeds and bio-fertilizers leveraging empty backhaul trucks.
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend:** FastAPI (Python 3.10+), SQLAlchemy, Uvicorn
-- **Database:** SQLite (lightweight zero-config persistence)
-- **Logistics Engine:** Google OR-Tools (Capacitated Vehicle Routing Problem - CVRP)
-- **Frontend:** Responsive Mobile-First PWA (HTML5, Vanilla JavaScript, CSS3, FontAwesome)
-- **Voice Engine:** Web Speech API (`SpeechRecognition` & `SpeechSynthesisUtterance`)
-- **HTTP Client & External Feeds:** HTTPX (async Agmarknet / Data.gov.in integration)
+### 5. ❄️ Solar Micro-Cold Storage & Pooled Agri-Inputs
+* **Distress-Sale Buffer:** On-demand booking for decentralized solar cold chambers at ₹6/crate/day for up to 14 days.
+* **Reverse Logistics Purchasing:** Up to 25% bulk savings on certified seeds and bio-fertilizers using empty return-haul trucks with zero freight fees.
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Technology Stack
 
-### 1. Prerequisites
-Ensure you have Python 3.10 or higher installed:
-```bash
-python --version
+| Layer | Technologies Used |
+|---|---|
+| **Backend Framework** | FastAPI (Python 3.10+), Uvicorn ASGI Server |
+| **ORM & Database** | SQLAlchemy 2.0, SQLite (Zero-config embedded relational store) |
+| **Logistics & Routing** | Google OR-Tools (Capacitated Vehicle Routing Problem - CVRP) |
+| **Frontend Clients** | Mobile-First Progressive Web App (HTML5, Vanilla ES6+, CSS3, FontAwesome) |
+| **Voice & Audio** | Browser Native Web Speech API (`SpeechRecognition` & `SpeechSynthesis`) |
+| **Network & Feeds** | HTTPX Async Client, Python-Dotenv, Pydantic v2 |
+
+---
+
+## 📁 Repository Directory Structure
+
+```text
+agri-marketplace/
+├── .gitignore                      # Git exclusions (venv, db, pycache)
+├── requirements.txt                # Production Python dependencies
+├── README.md                       # Comprehensive system documentation
+├── app/
+│   ├── __init__.py
+│   ├── main.py                     # FastAPI app bootstrap & static mount
+│   ├── database.py                 # SQLite engine & database sessions
+│   ├── models.py                   # SQLAlchemy schema definitions
+│   ├── schemas.py                  # Pydantic request/response models
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── endpoints.py            # REST endpoints (Auth, Mandi, Escrow, AI)
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── live_integrations.py    # Mandi pricing models & notification dispatch
+│   │   ├── freight_weighment.py    # Freight cost model & weighment generator
+│   │   ├── route_optimizer.py      # Google OR-Tools CVRP solver
+│   │   ├── assisted_bot.py         # Vernacular fallback parsing routines
+│   │   ├── mandi_api.py            # External data connectors
+│   │   └── pricing_forecasting.py  # Arrival analytics & price projections
+│   └── static/
+│       ├── index.html              # Farmer Portal PWA (Bilingual UI, AI Voice)
+│       ├── buyer.html              # Wholesale Buyer Hub & Escrow Management
+│       ├── driver.html             # Driver Route Manifest & Loading Tracker
+│       ├── manifest.json           # Web App Manifest for mobile installation
+│       ├── sw.js                   # Service Worker cache layer
+│       └── icon.svg                # Brand icon asset
+   🚀 Step-by-Step Setup & Installation1. PrerequisitesPython 3.10 or higherGit installed2. Clone the RepositoryBashgit clone [https://github.com/2025csdr129-cyber/KisanDirect.git](https://github.com/2025csdr129-cyber/KisanDirect.git)
+cd KisanDirect
+3. Create & Activate Virtual EnvironmentWindows (PowerShell):PowerShellpython -m venv venv
+.\venv\Scripts\Activate.ps1
+Linux / macOS:Bashpython3 -m venv venv
+source venv/bin/activate
+4. Install DependenciesBashpip install -r requirements.txt
+5. Configure Environment VariablesCreate a .env file in the project root:Ini, TOML# Production Secret Configuration
+JWT_SECRET_KEY=kisan_direct_production_key_2026
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+# External Mandi Agmarknet API (Optional)
+DATA_GOV_IN_API_KEY=
+6. Initialize Database TablesBashpython -c "from app.database import engine, Base; from app.models import *; Base.metadata.create_all(bind=engine); print('Database initialized successfully!')"
+7. Run the ApplicationBashpython -m uvicorn app.main:app --reload --port 8000
+🌐 Portal Navigation LinksOnce the application is running, open your browser to access the specialized interfaces:PortalURLTarget Audience & FeaturesFarmer PWAhttp://127.0.0.1:8000/Harvest publishing, KisanMitra AI Voice, mandi arbitrage, freight calculatorWholesale Buyer Hubhttp://127.0.0.1:8000/buyerVerified produce catalog, 40/60 split escrow locking & releaseDriver Manifesthttp://127.0.0.1:8000/driverCollection route stops, payload balance tracking, GPS navigationInteractive API Docshttp://127.0.0.1:8000/docsSwagger UI for all backend API endpointsAlternative API Docshttp://127.0.0.1:8000/redocReDoc API specifications📄 License & AttributionBuilt as an open-source agri-tech initiative for regional empowerment and fair agricultural trade in Rayalaseema, Andhra Pradesh.
+
